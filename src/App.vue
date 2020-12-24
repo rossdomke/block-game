@@ -1,13 +1,14 @@
 <template>
   <div id="app">
-    <!-- <img alt="Vue logo" src="./assets/logo.png" /> -->
-    <!-- <HelloWorld msg="Welcome to Your Vue.js + TypeScript App" /> -->
     <block-grid :block="GameBoard"></block-grid>
     <div class="game-pieces">
       <block-grid
         v-for="(piece, index) in PlayablePieces"
         :block="piece"
         :key="`playable-piece-${index}`"
+        @click.shift.native="piece.rotate()"
+        @click.ctrl.native="piece.mirror()"
+        @click.alt.native="$set(piece, 'fillColor', randomColor())"
       ></block-grid>
       <button @click="GeneratePieces">Gen</button>
     </div>
@@ -15,22 +16,20 @@
 </template>
 
 <script lang="ts">
+import colorGen from "color-generator";
 import { Component, Vue } from "vue-property-decorator";
-import { Block, BlockCell, shortL } from "./Types";
+import { Block, BlockCell, BlockFactory } from "./Block";
 import BlockGrid from "./components/BlockGrid.vue";
-function randColor() {
-  return "#" + ((Math.random() * 0xffffff) << 0).toString(16);
-}
 function GridGenerator(
   width: number,
   height: number,
-  color: string = randColor()
+  color: string = colorGen().hexString(),
 ): Block {
   const blockData: BlockCell[][] = [];
   for (let h = 0; h < height; h += 1) {
     blockData[h] = [];
     for (let w = 0; w < width; w += 1) {
-      blockData[h][w] = { backgroundColor: color, filled: false };
+      blockData[h][w] = { emptyColor: color, filled: false };
     }
   }
   const block = new Block(blockData);
@@ -49,12 +48,17 @@ export default class App extends Vue {
   created() {
     this.GeneratePieces();
   }
+  randomColor() {
+    return colorGen().hexString();
+  }
   GeneratePieces() {
     this.PlayablePieces = [];
     for (let p = 0; p < this.MaxPieces; p += 1) {
-      this.PlayablePieces[p] = new Block(shortL);
-      this.PlayablePieces[p].SetColor(randColor());
-      this.PlayablePieces[p].SetBackgroundColor();
+      Vue.set(this.PlayablePieces, p, BlockFactory());
+      Vue.set(this.PlayablePieces[p], 'fillColor', this.randomColor());
+      // this.PlayablePieces[p] = BlockFactory();
+      // this.PlayablePieces[p].fillColor = this.randomColor();
+      this.PlayablePieces[p].emptyColor = '';
     }
   }
 }
