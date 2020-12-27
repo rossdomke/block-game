@@ -21,7 +21,18 @@ class Block {
   }
 
   constructor(cellData: BlockCell[][] = []){
-    this.cells = cellData;
+    
+    const cells:BlockCell[][] = []
+    for(let r = 0; r < cellData.length; r += 1){
+      cells.push([]);
+      for(let c = 0; c < cellData[r].length; c += 1){
+        cells[r].push({...cellData[r][c]})
+      }
+      
+    }
+    console.log(cellData);
+    this.cells = cells;
+    
   }
   private _fillColor?:string;
   get fillColor() {
