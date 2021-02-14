@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <block-grid :block="GameBoard"></block-grid>
+    <block-grid :block="GameBoard" />
     <div class="game-pieces">
       <block-grid
         v-for="(piece, index) in PlayablePieces"
@@ -11,6 +11,7 @@
         @click.alt.native="$set(piece, 'fillColor', randomColor())"
       ></block-grid>
       <button @click="GeneratePieces">Gen</button>
+      <div draggable @dragstart="testDrag()">Drag this</div>
     </div>
   </div>
 </template>
@@ -23,13 +24,18 @@ import BlockGrid from "./components/BlockGrid.vue";
 function GridGenerator(
   width: number,
   height: number,
-  color: string = colorGen().hexString(),
+  color: string = colorGen().hexString()
 ): Block {
   const blockData: BlockCell[][] = [];
   for (let h = 0; h < height; h += 1) {
     blockData[h] = [];
     for (let w = 0; w < width; w += 1) {
-      blockData[h][w] = { emptyColor: color, filled: false };
+      blockData[h][w] = {
+        emptyColor: color,
+        highlightColor: "#FF0000",
+        filled: false,
+        highlighted: false
+      };
     }
   }
   const block = new Block(blockData);
@@ -51,14 +57,18 @@ export default class App extends Vue {
   randomColor() {
     return colorGen().hexString();
   }
+  pieceDropped(evt: DragEvent) {
+    console.log(evt, evt.dataTransfer.getData("blockId"));
+  }
   GeneratePieces() {
     this.PlayablePieces = [];
     for (let p = 0; p < this.MaxPieces; p += 1) {
       Vue.set(this.PlayablePieces, p, BlockFactory());
-      Vue.set(this.PlayablePieces[p], 'fillColor', this.randomColor());
+      Vue.set(this.PlayablePieces[p], "fillColor", this.randomColor());
+      // Vue.set(this.PlayablePieces[p], 'emptyColor', "#cccccc");
       // this.PlayablePieces[p] = BlockFactory();
       // this.PlayablePieces[p].fillColor = this.randomColor();
-      this.PlayablePieces[p].emptyColor = '';
+      this.PlayablePieces[p].emptyColor = "#ccc";
     }
   }
 }

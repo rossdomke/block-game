@@ -48,4 +48,15 @@ const bigO:BlockCell[][] = [
 ];
 
 
-export { smallL, l, bigL, i, smallI, s, t, o, smallO, bigO }
+export { 
+  smallL,
+  // l,
+  bigL,
+  i,
+  smallI,
+  s,
+  t,
+  o,
+  smallO,
+  bigO
+}

@@ -6,6 +6,7 @@ interface BlockCell {
   emptyColor?: string;
   highlightColor?: string;
   filled: boolean;
+  highlighted?: boolean;
   foreignBlock?: boolean;
 }
 
@@ -30,7 +31,6 @@ class Block {
       }
       
     }
-    console.log(cellData);
     this.cells = cells;
     
   }
@@ -39,7 +39,6 @@ class Block {
     return this._fillColor || '';
   }
   set fillColor(color: string) {
-    console.log('setting color', color);
     this._fillColor = color;
     this.applyToCells(cell => {
       cell.fillColor = color;
@@ -52,6 +51,7 @@ class Block {
     return this._emptyColor || '';
   }
   set emptyColor(color: string) {
+    console.log(color, 'why');
     this._emptyColor = color;
     this.applyToCells(cell => {
       cell.emptyColor = color;
