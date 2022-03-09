@@ -1,0 +1,15 @@
+/* Colors https://coolors.co/f83fff-49aaff-3d405b-ffffff-000000 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: bodrder-box;
+}
+
+body {
+  background-color: #3d405b;
+}
+
+canvas {
+  border: 1px solid black;
+  margin: 0 auto;
+}
