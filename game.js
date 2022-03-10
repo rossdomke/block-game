@@ -12,6 +12,7 @@ function uuidv4() {
 
 class GameObject {
   debug = true;
+  value = 1;
   id = null;
   pos = {
     x: 0,
@@ -42,45 +43,75 @@ class GameObject {
       this.dragging = true;
     }
   }
+  destroy() {
+    const objIdx = _.findIndex(state.gameObjects, (o) => o.id === this.id);
+    state.gameObjects.splice(objIdx, 1);
+  }
 
   mouseUp(gObjs) {
     if (this.draggable && this.dragging) {
       this.dragging = false;
+      const collisionObjs = state.gameObjects.reduce(
+        (acc, go, i) => {
+          return {
+            ...acc,
+            ...(go.boxCollisionCheck(this.pos.x, this.pos.y, this.width, this.height) && go.id !== this.id && {
+              [i]: go
+            }),
+          }
+        }, {}
+      );
 
-      //if initial position was set
-      if (this.#i_pos) {
-        //check if valid position with all game objects
-        if (!this.validPosition(gObjs))
-          this.pos = {
-            ...this.#i_pos
-          };
 
-        //reset initial position
-        this.#i_pos = null;
+      let destroy = false;
+      Object.keys(collisionObjs).forEach((i) => {
+        if (this.value === state.gameObjects[i].value) {
+          state.gameObjects[i].value *= 2;
+          destroy = true
+        }
+      });
+
+      if (destroy) {
+        this.destroy();
+      } else if (this.#i_pos) {
+
+        this.pos = {
+          ...this.#i_pos
+        };
+
       }
+
+
+      //reset initial position
+      this.#i_pos = null;
+
     }
   }
 
   validPosition(gObjs) {
-    let collisionDetected = false;
+    return true;
+    // let collisionDetected = false;
 
-    gObjs.forEach((go, i) => {
-       if (go.id === this.id) return;
-       collisionDetected = collisionDetected || go.boxCollisionCheck(this.pos.x, this.pos.y, this.width, this.height);
-    });
+    // gObjs.forEach((go, i) => {
+    //    if (go.id === this.id) return;
+    //    collisionDetected = collisionDetected || go.boxCollisionCheck(this.pos.x, this.pos.y, this.width, this.height);
+    // });
 
-    return !collisionDetected;
+    // return !collisionDetected;
 
   }
 
   mouseMove(dx, dy) {
 
-    const p = {x: this.pos.x + dx, y: this.pos.y + dy};
+    const p = {
+      x: this.pos.x + dx,
+      y: this.pos.y + dy
+    };
 
     //check for x overflow
-    if(p.x < 0 || p.x + this.width > canvas.width) return;
+    if (p.x < 0 || p.x + this.width > canvas.width) return;
     //check for y overflow
-    if(p.y < 0 || p.y + this.height > canvas.height) return;
+    if (p.y < 0 || p.y + this.height > canvas.height) return;
 
     this.pos.x += dx;
     this.pos.y += dy;
@@ -117,16 +148,23 @@ class GameObject {
     // this.pos.x = Math.abs((this.pos.x + dt / getRandomInt(5, 10))) % canvas.width;
     // this.pos.y = Math.abs((this.pos.y + dt / getRandomInt(1, 20))) % canvas.height;
     ctx.beginPath();
+
     if (this.draggable)
       ctx.fillStyle = this.dragging ? this.dragFill : this.fill;
     else
       ctx.fillStyle = "#777777";
 
-    if (this.debug) {
-      ctx.fillText(this.id, this.pos.x, this.pos.y);
-    }
     ctx.rect(this.pos.x, this.pos.y, this.width, this.height);
     ctx.fill();
+
+    if (this.debug) {
+      ctx.fillStyle = this.dragFill;
+      ctx.font = "10px helvetica-neue, sans-serif";
+      //  ctx.fillText(this.id, this.pos. x, this.pos.y);
+      ctx.font = "30px helvetica-neue, sans-serif";
+      ctx.fillStyle = "#2d2d2d";
+      ctx.fillText(this.value, this.pos.x + this.width / 2 - 10, this.pos.y + this.width / 2 + 10)
+    }
   }
 }
 
@@ -204,7 +242,7 @@ function handleDragAndDrop(canvas) {
     const dY = mouseY - prevY;
 
     if (dX || dY) {
-      // calculate new image positions
+      // calculate new position
       Object.keys(state.dragging).forEach((i) => {
         state.gameObjects[i].mouseMove(dX, dY);
       });
@@ -261,8 +299,8 @@ function setup() {
     const w = 100; // getRandomInt(50, 100);
     const x = getRandomInt(w, canvas.width) - w;
     const y = getRandomInt(w, canvas.height) - w;
-    
-    if(state.gameObjects.every((sgo) => !sgo.boxCollisionCheck(x, y, w, w))){
+
+    if (state.gameObjects.every((sgo) => !sgo.boxCollisionCheck(x, y, w, w))) {
       const go = new GameObject(x, y, w, w);
       go.draggable = true; //getRandomInt(1, 3) == 1;
       state.gameObjects.push(go);
